@@ -190,6 +190,15 @@ fieldset.off{border:0;margin:0;padding:0;min-width:0;opacity:.45}
 input.tel{min-height:40px;padding:0 10px}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sw.wa{color:#4ADE80;border-color:#4ADE80}}
 a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.sets{display:grid;grid-template-columns:62px 1fr 1fr;gap:8px 10px;align-items:center;margin:12px 0 4px}
+.sets .tm{font-weight:700;font-size:14px;line-height:1.2;text-align:center;overflow-wrap:anywhere}
+.sets .sl{font:800 13px ui-rounded,system-ui,sans-serif;color:var(--muted)}
+.sets input{height:58px;font-size:30px;font-weight:800;text-align:center;padding:0;font-variant-numeric:tabular-nums}
+.sets .sv{grid-column:1/-1;font-size:13px;min-height:16px;margin:-3px 0 2px;padding-left:2px}
+.sets .sv.ok{color:var(--ok)}.sets .sv.ko{color:var(--live)}
+.sets [hidden]{display:none!important}
+.sum{font-weight:700;margin:6px 0;min-height:22px}
+.err ul{margin:4px 0 4px 18px;padding:0;font-weight:400}
 </style>
 
 <header class="top"><div id="clubbar"></div><div class="hrow"><div class="sub" id="cat"></div><div class="hb"><button class="sw wa" data-act="wa">💬 WhatsApp</button><button class="sw" data-act="lib" id="swb"></button></div></div><h1 id="ttl"></h1><div class="sub" id="sub"></div></header>
@@ -634,19 +643,71 @@ function shareText(){
 
 function sheetHtml(){
   const m=MM[UI.sheet];if(!m)return '';
-  const r=S.res[m.id],a=tn(rs(m.a,S.res)),b=tn(rs(m.b,S.res)),f=fOfM(m),dec=f===0,cols=dec?1:3;
+  const r=S.res[m.id],A=tn(rs(m.a,S.res)),B=tn(rs(m.b,S.res)),f=fOfM(m),dec=f===0,ro=RO();
   const val=(s,i)=>r&&r.sets[s]?r.sets[s][i]:'';
-  const inp=(s,i)=>`<input id="i-${s}-${i?'b':'a'}" inputmode="numeric" pattern="[0-9]*" maxlength="2" value="${val(s,i)}" aria-label="${dec?'Score':s===2?'Super tie-break':'Set '+(s+1)} ${i?b:a}" ${RO()?'disabled':''}>`;
+  const inp=(s,i,who)=>`<input id="i-${s}-${i?'b':'a'}" inputmode="numeric" pattern="[0-9]*" maxlength="2" enterkeyhint="next" value="${val(s,i)}" aria-label="${dec?'Score':s===2?'Super jeu décisif':'Set '+(s+1)} ${esc(who)}" ${ro?'disabled':''}>`;
+  const row=(s,lab)=>`<b class="sl" id="sl-${s}">${lab}</b>${inp(s,0,A)}${inp(s,1,B)}<span class="sv" id="sv-${s}" aria-live="polite"></span>`;
+  const rows=dec?`<div id="sr-0" style="display:contents">${row(0,'Score')}</div>`:`<div id="sr-0" style="display:contents">${row(0,'Set 1')}</div><div id="sr-1" style="display:contents">${row(1,'Set 2')}</div><div id="sr-2" style="display:contents" ${r&&r.sets[2]?'':'hidden'}>${row(2,'Super jeu')}</div>`;
   return `<div class="back" data-act="closeSheet" data-self="1"><div class="sheet" role="dialog" aria-modal="true"><h3>Match ${m.no} · ${esc(m.lab)}</h3>
   <div class="hint">${hm(m.t0)} · Terrain ${m.court} · ${FN(f).toLowerCase()}</div>
-  <div class="grid" style="grid-template-columns:1fr repeat(${cols},64px)"><span></span>${dec?'<span class="h">Score</span>':'<span class="h">Set 1</span><span class="h">Set 2</span><span class="h">Super TB</span>'}
-  <span class="tn">${esc(a)}</span>${Array.from({length:cols},(_,s)=>inp(s,0)).join('')}
-  <span class="tn">${esc(b)}</span>${Array.from({length:cols},(_,s)=>inp(s,1)).join('')}</div>
-  <p class="hint">${FJ[f].d}.${dec?'':' Le super jeu décisif ne se joue qu\'à un set partout.'}</p>
+  <div class="sets" id="sets" data-a="${esc(A)}" data-b="${esc(B)}"><span></span><span class="tm">${esc(A)}</span><span class="tm">${esc(B)}</span>${rows}</div>
+  <div class="sum" id="sum" aria-live="polite"></div>
+  <p class="hint">${FJ[f].d}.${dec?'':' Le super jeu décisif ne se joue qu\'à un set partout.'} Les sets s'enchaînent : le suivant s'active dès que le précédent est valide.</p>
   ${r&&r.wo?'<p class="note">Victoire par WO (score forfaitaire).</p>':''}
+  ${r&&!ro?'<p class="note">Tu peux corriger ce score même si des matchs suivants sont déjà joués : seuls ceux dont les équipes changent sont à rejouer (confirmation demandée).</p>':''}
   <div class="err" id="err" role="alert"></div>
-  <div class="btnrow">${RO()?'':`<button class="btn pri" data-act="saveScore">Enregistrer</button>${r?'<button class="btn warn" data-act="clearScore">Effacer</button>':''}`}<button class="btn" data-act="closeSheet">Fermer</button></div>
-  ${RO()?'':`<h4>Forfait (WO)</h4><div class="btnrow"><button class="btn sm warn" data-act="wo" data-v="a">Forfait de ${esc(a)}</button><button class="btn sm warn" data-act="wo" data-v="b">Forfait de ${esc(b)}</button></div>`}</div></div>`}
+  <div class="btnrow">${ro?'':`<button class="btn pri" data-act="saveScore">Enregistrer</button>${r?'<button class="btn warn" data-act="clearScore">Effacer</button>':''}`}<button class="btn" data-act="closeSheet">Fermer</button></div>
+  ${ro?'':`<h4>Forfait (WO)</h4><div class="btnrow"><button class="btn sm warn" data-act="wo" data-v="a">Forfait de ${esc(A)}</button><button class="btn sm warn" data-act="wo" data-v="b">Forfait de ${esc(B)}</button></div>`}</div></div>`}
+/* Lecture et contrôle des champs de score ; sert à l'aperçu en direct et à l'enregistrement */
+function scParse(){
+  const m=MM[UI.sheet],f=fOfM(m),{n,tb}=FJ[f],rows=[],sets=[];let wa=0,wb=0,err='';
+  const v=(s,t)=>{const el=$('#i-'+s+'-'+t);if(!el)return null;const x=el.value.trim();return x===''?null:parseInt(x,10)};
+  const rowState=(s,ok)=>{const a=v(s,'a'),b=v(s,'b');if(a==null&&b==null)return {st:'empty'};if(a==null||b==null||isNaN(a)||isNaN(b))return {st:'partial'};return ok(a,b)?{st:'ok',a,b,w:a>b?'a':'b'}:{st:'bad',a,b}};
+  const take=r=>{sets.push([r.a,r.b]);r.w==='a'?wa++:wb++};
+  const badMsg=tb===n?`${n} jeux avec 2 d'écart, ou ${n+1}-${n-1} / ${n+1}-${n}`:`${n} jeux, l'adversaire en a ${n-1} au maximum`;
+  let stb=false;
+  if(f===0){const r=rowState(0,(a,b)=>validSet(a,b,0));rows.push(r);
+    if(r.st==='ok')take(r);else err=r.st==='bad'?'Format découverte : 1 set de 12 points, le score du vainqueur est de 12.':'Renseigne le score des deux équipes.'}
+  else{
+    for(let s=0;s<2;s++){const r=rowState(s,(a,b)=>validSet(a,b,f));rows.push(r);
+      if(r.st==='ok')take(r);else if(!err)err=r.st==='bad'?`Set ${s+1} : score impossible en format ${f}. Il faut ${badMsg}.`:`Renseigne le score du set ${s+1} pour les deux équipes.`}
+    stb=rows[0].st==='ok'&&rows[1].st==='ok'&&wa===1&&wb===1;
+    const r3=rowState(2,(a,b)=>Math.max(a,b)>=10&&Math.abs(a-b)>=2);rows.push(r3);
+    if(stb){if(r3.st==='ok')take(r3);else if(!err)err=r3.st==='bad'?'Super jeu décisif : 10 points minimum avec 2 points d\'écart.':'Un set partout : renseigne le super jeu décisif.'}
+    else if(rows[0].st==='ok'&&rows[1].st==='ok'&&r3.st!=='empty'&&!err)err='Le match est terminé en 2 sets : pas de super jeu décisif.'}
+  const done=!err&&sets.length>0&&(f===0||sets.length>=2);
+  return {f,rows,sets,stb,err,done,w:done?(wa>wb?'a':'b'):null,badMsg}}
+function scLive(){
+  const box=$('#sets');if(!box||!UI.sheet||!MM[UI.sheet])return;
+  const A=box.dataset.a,B=box.dataset.b;let p=scParse();
+  const r2=$('#sr-2');
+  if(r2){if(!p.stb){['a','b'].forEach(t=>{const el=$('#i-2-'+t);if(el&&el.value!=='')el.value=''});p=scParse()}
+    r2.hidden=!p.stb}
+  p.rows.forEach((r,s)=>{const el=$('#sv-'+s);if(!el)return;
+    if(r.st==='ok'){el.className='sv ok';el.textContent='✓ '+(p.f===0?'Victoire de ':s===2?'Super jeu décisif pour ':'Set pour ')+(r.w==='a'?A:B)}
+    else if(r.st==='bad'){el.className='sv ko';el.textContent=s===2?'Score impossible : 10 points minimum avec 2 d\'écart.':p.f===0?'Score impossible : le vainqueur a 12 points.':'Score impossible : '+p.badMsg+'.'}
+    else{el.className='sv';el.textContent=''}});
+  const sum=$('#sum');if(sum)sum.textContent=p.done?'Vainqueur : '+(p.w==='a'?A:B)+' ('+p.sets.map(x=>p.w==='a'?x[0]+'-'+x[1]:x[1]+'-'+x[0]).join(' ')+')':'';
+  if(UI.cf){UI.cf=null;const e=$('#err');if(e)e.textContent=''}}
+/* Matchs déjà joués dont les équipes changeraient si ce résultat était modifié : leurs scores sont à effacer */
+function impact(mid,nr){
+  const R0=S.res,before={};
+  G.matches.forEach(m=>{if(!m.auto&&R0[m.id]&&m.id!==mid)before[m.id]=[rs(m.a,R0),rs(m.b,R0)]});
+  const R2=Object.assign({},R0);if(nr)R2[mid]=nr;else delete R2[mid];
+  const out=[];let ch=true,g=0;
+  while(ch&&g++<60){ch=false;Object.keys(before).forEach(id=>{if(!R2[id])return;const m=MM[id],now=[rs(m.a,R2),rs(m.b,R2)];
+    if(now[0]!==before[id][0]||now[1]!==before[id][1]){delete R2[id];out.push({m,txt:(before[id][0]?tn(before[id][0]):'?')+' / '+(before[id][1]?tn(before[id][1]):'?')});ch=true}})}
+  return out}
+function applyRes(mid,nr,key,msg){
+  const imp=impact(mid,nr),sig=key+JSON.stringify(nr);
+  if(imp.length&&(!UI.cf||UI.cf.sig!==sig)){
+    UI.cf={sig};const e=$('#err');
+    if(e)e.innerHTML='⚠ Cette modification change les équipes de '+imp.length+' match'+(imp.length>1?'s':'')+' déjà joué'+(imp.length>1?'s':'')+' : '+(imp.length>1?'leurs scores seront effacés et ils seront':'son score sera effacé et il sera')+' à rejouer.<ul>'+imp.map(x=>'<li>Match '+x.m.no+' · '+esc(x.m.lab)+' : '+esc(x.txt)+'</li>').join('')+'</ul>Appuie de nouveau sur le même bouton pour confirmer.';
+    return false}
+  UI.cf=null;imp.forEach(x=>{delete S.res[x.m.id]});
+  if(nr)S.res[mid]=nr;else delete S.res[mid];
+  save();UI.sheet=null;render();
+  toast(msg+(imp.length?' '+imp.length+' match'+(imp.length>1?'s':'')+' à rejouer.':''));return true}
 function editHtml(){
   const t=S.teams.find(x=>x.id===UI.edit);if(!t)return '';const si=seedInfo(),C=CAT[S.cat],f=(k,l,v,extra='')=>`<label class="lb" for="e-${k}">${l}</label><input id="e-${k}" value="${esc(v||'')}" ${extra}>`;
   return `<div class="back" data-act="closeSheet" data-self="1"><div class="sheet" role="dialog" aria-modal="true"><h3>Modifier l'équipe</h3>
@@ -730,18 +791,11 @@ function render(){
   const tabs=[['teams','Équipes'],['format','Tournoi'],['matches','Matchs'],['pools','Poules'],['draw','Tableau'],['results','Résultats']];
   $('#nav').innerHTML=tabs.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${UI.tab===k?'aria-current="page"':''}>${l}${k==='matches'&&todo?`<span class="cnt">${todo}</span>`:''}</button>`).join('');
   const X=tabExtras();$('#app').innerHTML=X.pre+({teams:viewTeams,format:viewFormat,matches:viewMatches,pools:viewPools,draw:viewDraw,results:viewResults})[UI.tab]()+X.post;applyClub();renderClub();
-  $('#sheetRoot').innerHTML=UI.lib?libHtml():UI.sheet?sheetHtml():UI.edit?editHtml():UI.fft?fftHtml():UI.rk?rkHtml():UI.club?clubHtml():UI.about?aboutHtml():UI.wa?waHtml():'';
+  $('#sheetRoot').innerHTML=UI.lib?libHtml():UI.sheet?sheetHtml():UI.edit?editHtml():UI.fft?fftHtml():UI.rk?rkHtml():UI.club?clubHtml():UI.about?aboutHtml():UI.wa?waHtml():'';if(UI.sheet)scLive();
 }
 function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2800)}
 
 /* ---------- Actions ---------- */
-function blocked(mid,newW){
-  const m=MM[mid],old=S.res[mid];
-  if(old&&newW===old.w&&!m.pool)return false;
-  const dep=G.matches.filter(x=>S.res[x.id]&&x.id!==mid&&deps(x).includes(mid));
-  const poolDep=m.pool?G.matches.filter(x=>S.res[x.id]&&!x.pool&&deps(x).some(d=>MM[d].pool===m.pool)):[];
-  if(old&&newW===old.w&&m.pool&&!poolDep.length)return false;
-  return dep.length||poolDep.length}
 function fixForm(){const r=BTC[S.bt],mix=S.cat==='X',al=mix?r.mix:r.forms;if(!al.includes(S.cfg.form))S.cfg.form=(!mix&&al.includes(4))?4:al[0]}
 const okL=x=>!x||/^[0-9]{5,9}[A-Z]?$/.test(x);
 const normL=x=>x.replace(/\s/g,'').toUpperCase();
@@ -800,7 +854,7 @@ const ACT={
     S.g=null;S.res={};setG(null);UI.confirm=null;save();render();toast('Tournoi réinitialisé. Les équipes sont conservées.')},
   open(id){const m=MM[id],a=rs(m.a,S.res),b=rs(m.b,S.res);
     if(!a||!b)return toast('Les équipes de ce match ne sont pas encore connues.');
-    UI.sheet=id;render();const i=$('#i-0-a');if(i&&!RO())i.focus()},
+    UI.sheet=id;UI.cf=null;render();const i=$('#i-0-a');if(i&&!RO())i.focus()},
   closeSheet(){UI.sheet=null;UI.edit=null;UI.lib=false;UI.fft=null;UI.rk=false;UI.club=false;UI.about=false;UI.wa=false;UI.confirm=null;render()},
   editTeam(id){if(S.g)return;UI.edit=id;render();const i=$('#e-a');if(i)i.focus()},
   saveTeam(){const t=S.teams.find(x=>x.id===UI.edit),v=k=>$('#e-'+k).value.trim(),err=m=>{$('#err').textContent=m};
@@ -810,31 +864,11 @@ const ACT={
     if(la&&la===lb)return err('Les deux joueurs ont le même numéro de licence.');
     const dup=S.teams.find(x=>x.id!==t.id&&[x.la,x.lb].some(y=>y&&(y===la||y===lb)));if(dup)return err('Ce numéro de licence est déjà inscrit : '+base(dup.id)+'.');
     Object.assign(t,{a,b,la,lb,ra,rb});if($('#e-cmp'))t.comp=$('#e-cmp').value;save();UI.edit=null;render();toast('Équipe mise à jour.')},
-  saveScore(){const mid=UI.sheet,m=MM[mid],f=fOfM(m),{n,tb}=FJ[f],err=t=>{$('#err').textContent=t};
-    const v=(s,t)=>{const x=$('#i-'+s+'-'+t).value.trim();return x===''?null:parseInt(x,10)};
-    const sets=[];let wa=0,wb=0;
-    if(f===0){const a=v(0,'a'),b=v(0,'b');
-      if(a==null||b==null||isNaN(a)||isNaN(b))return err('Renseigne le score des deux équipes.');
-      if(!validSet(a,b,0))return err('Format découverte : 1 set de 12 points, le score du vainqueur est de 12.');
-      sets.push([a,b]);a>b?wa++:wb++}
-    else{
-      for(let s=0;s<2;s++){const a=v(s,'a'),b=v(s,'b');
-        if(a==null||b==null||isNaN(a)||isNaN(b))return err(`Renseigne le score du set ${s+1} pour les deux équipes.`);
-        if(!validSet(a,b,f))return err(`Set ${s+1} : score impossible en format ${f}. ${tb===n?`Il faut ${n} jeux avec 2 d'écart, ou ${n+1}-${n-1} / ${n+1}-${n}.`:`Il faut ${n} jeux, l'adversaire en a ${n-1} au maximum.`}`);
-        sets.push([a,b]);a>b?wa++:wb++}
-      const a3=v(2,'a'),b3=v(2,'b');
-      if(wa===1&&wb===1){if(a3==null||b3==null||isNaN(a3)||isNaN(b3))return err('Un set partout : renseigne le super jeu décisif.');
-        if(Math.max(a3,b3)<10||Math.abs(a3-b3)<2)return err('Super jeu décisif : 10 points minimum avec 2 points d\'écart.');
-        sets.push([a3,b3]);a3>b3?wa++:wb++}
-      else if(a3!=null||b3!=null)return err('Le match est terminé en 2 sets : pas de super jeu décisif.')}
-    const w=wa>wb?'a':'b';
-    if(blocked(mid,w))return err('Impossible : des matchs suivants dépendent déjà de ce résultat. Efface d\'abord leurs scores.');
-    S.res[mid]={sets,w};save();UI.sheet=null;render();toast('Résultat enregistré.')},
+  saveScore(){if(!UI.sheet)return;const p=scParse();if(!p.done){$('#err').textContent=p.err||'Renseigne le score.';return}
+    applyRes(UI.sheet,{sets:p.sets,w:p.w},'save','Résultat enregistré.')},
   wo(_,side){const mid=UI.sheet,m=MM[mid],f=fOfM(m),w=side==='a'?'b':'a';
-    if(blocked(mid,w))return $('#err').textContent='Impossible : des matchs suivants dépendent déjà de ce résultat. Efface d\'abord leurs scores.';
-    S.res[mid]={sets:forfait(f).map(s=>w==='a'?s:[s[1],s[0]]),w,wo:side};save();UI.sheet=null;render();toast('Forfait enregistré (score forfaitaire).')},
-  clearScore(){const mid=UI.sheet;if(blocked(mid,null))return $('#err').textContent='Impossible : des matchs suivants dépendent déjà de ce résultat. Efface d\'abord leurs scores.';
-    delete S.res[mid];save();UI.sheet=null;render();toast('Résultat effacé.')},
+    applyRes(mid,{sets:forfait(f).map(s=>w==='a'?s:[s[1],s[0]]),w,wo:side},'wo'+side,'Forfait enregistré (score forfaitaire).')},
+  clearScore(){applyRes(UI.sheet,null,'clear','Résultat effacé.')},
   async share(){const t=shareText();try{if(navigator.share){await navigator.share({title:S.name,text:t});return}}catch(e){if(e&&e.name==='AbortError')return}ACT.copy()},
   copy(){const t=shareText(),ok=()=>toast('Texte copié.');
     const fb=()=>{const r=document.createRange();r.selectNodeContents($('#shareTxt'));const s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');ok()}catch(e){toast('Sélectionne le texte pour le copier.')}};
@@ -1283,7 +1317,14 @@ Object.assign(ACT,{
     catch(e){copyText(v,'Fichier indisponible : contacts copiés en texte.')}},
   mark(id){S.wa=S.wa||{link:'',sent:{}};S.wa.sent=S.wa.sent||{};S.wa.sent[id]=true;save();setTimeout(render,600)}
 });
-document.addEventListener('input',e=>{if(e.target.id==='wamsg')UI.wamsg=e.target.value});
+document.addEventListener('input',e=>{if(e.target.id==='wamsg')UI.wamsg=e.target.value;
+  const mm=/^i-(\d)-(a|b)$/.exec(e.target.id||'');
+  if(mm&&UI.sheet){e.target.value=e.target.value.replace(/\D/g,'');scLive();const s=+mm[1],p=scParse(),r=p.rows[s];
+    if(r&&r.st==='ok'){const nx=$('#i-'+(s+1)+'-a'),box=$('#sr-'+(s+1));if(nx&&!(box&&box.hidden)&&nx.value==='')nx.focus()}}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&/^i-\d-(a|b)$/.test(e.target.id||'')&&UI.sheet){e.preventDefault();
+    const all=[...document.querySelectorAll('#sets input')].filter(x=>!x.closest('[hidden]')),i=all.indexOf(e.target);
+    if(i<all.length-1)all[i+1].focus();else ACT.saveScore()}});
 
 useCur();
 if(S.g)UI.tab='matches';
