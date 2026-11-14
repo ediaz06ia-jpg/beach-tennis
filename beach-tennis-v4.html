@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Beach tennis · Gestion de tournoi (v4)</title>
+<title>Beach tennis · Gestion de tournoi (v4.2)</title>
 <style>
 :root{--bg:#EAF3F2;--surface:#FFFFFF;--ink:#0A2E38;--muted:#58747C;--line:#CFE0DF;--soft:#DCEBEA;--primary:#0A5566;--on-primary:#FFFFFF;--accent:#FFC21A;--on-accent:#2B2100;--live:#D9482B;--ok:#16794C;--shadow:0 1px 0 rgba(10,46,56,.06);
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -199,6 +199,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .sets [hidden]{display:none!important}
 .sum{font-weight:700;margin:6px 0;min-height:22px}
 .err ul{margin:4px 0 4px 18px;padding:0;font-weight:400}
+.ver{text-align:center;margin:20px 0 4px;font-size:12px;color:var(--muted)}
+.ver button{background:none;border:0;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:2px;min-height:36px;padding:0 8px;cursor:pointer}
 </style>
 
 <header class="top"><div id="clubbar"></div><div class="hrow"><div class="sub" id="cat"></div><div class="hb"><button class="sw wa" data-act="wa">💬 WhatsApp</button><button class="sw" data-act="lib" id="swb"></button></div></div><h1 id="ttl"></h1><div class="sub" id="sub"></div></header>
@@ -781,6 +783,8 @@ function viewDraw(){
   if(!G.blocks||!G.blocks.length)return ''+empty(G.fmt==='poule'?'Poule unique':'Tableau indisponible',G.fmt==='poule'?'Ce format se joue en poule unique : voir l\'onglet Poules.':'Repars de zéro dans l\'onglet Tournoi pour générer le tableau.');
   return ''+`<p class="hint">Touche un match pour saisir ou corriger le score. Contour vert : match prêt à jouer. Le tableau se remplit au fur et à mesure des résultats.</p>`+G.blocks.map(brHtml).join('')}
 
+const APP_VER='4.2',APP_DATE='14/11/2026';
+const verHtml=()=>`<p class="ver"><button data-act="aboutOpen" aria-label="À propos, version ${APP_VER}">Beach tennis · Gestion de tournoi · version ${APP_VER} · ${APP_DATE}</button></p>`;
 function render(){
   const n=S.teams.length,act=DB.items.filter(t=>!t.arch).length;
   $('#ttl').textContent=S.name;$('#cat').textContent=S.bt+' · '+CAT[S.cat].n+(S.date?' · '+fmtD(S.date):'');
@@ -790,7 +794,7 @@ function render(){
   const todo=S.g?G.matches.filter(m=>!m.auto&&!S.res[m.id]&&m.t0!=null).length:0;
   const tabs=[['teams','Équipes'],['format','Tournoi'],['matches','Matchs'],['pools','Poules'],['draw','Tableau'],['results','Résultats']];
   $('#nav').innerHTML=tabs.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${UI.tab===k?'aria-current="page"':''}>${l}${k==='matches'&&todo?`<span class="cnt">${todo}</span>`:''}</button>`).join('');
-  const X=tabExtras();$('#app').innerHTML=X.pre+({teams:viewTeams,format:viewFormat,matches:viewMatches,pools:viewPools,draw:viewDraw,results:viewResults})[UI.tab]()+X.post;applyClub();renderClub();
+  const X=tabExtras();$('#app').innerHTML=X.pre+({teams:viewTeams,format:viewFormat,matches:viewMatches,pools:viewPools,draw:viewDraw,results:viewResults})[UI.tab]()+X.post+verHtml();applyClub();renderClub();
   $('#sheetRoot').innerHTML=UI.lib?libHtml():UI.sheet?sheetHtml():UI.edit?editHtml():UI.fft?fftHtml():UI.rk?rkHtml():UI.club?clubHtml():UI.about?aboutHtml():UI.wa?waHtml():'';if(UI.sheet)scLive();
 }
 function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2800)}
@@ -945,6 +949,7 @@ const PRIVACY=[
   ['Indépendance','Application indépendante, non affiliée à la Fédération Française de Tennis et non approuvée par elle. Les règles appliquées sont celles du règlement sportif et du guide de la compétition beach tennis publiés par la FFT ; vérifie-les avant toute homologation.']];
 function aboutHtml(){
   return `<div class="back" data-act="closeSheet" data-self="1"><div class="sheet" role="dialog" aria-modal="true"><h3>À propos et confidentialité</h3>
+   <p class="hint">Beach tennis · Gestion de tournoi · version ${APP_VER} (${APP_DATE})</p>
   ${PRIVACY.map(([t,x])=>`<h4>${t}</h4><p class="hint" style="color:var(--ink)">${x}</p>`).join('')}
   ${NATIVE?'':'<p class="note">Version navigateur de test. Grisés ici : rappels de match, lecture des PDF de classement'+(CAN.pdf?'':', export PDF')+(CAN.dl?'':', téléchargement de sauvegarde')+'. Les données sont enregistrées dans ce navigateur : exporte régulièrement une sauvegarde.</p>'}<p class="hint">Lecture des fichiers Excel : bibliothèque SheetJS (licence Apache 2.0), intégrée à l'application.</p>
   <div class="btnrow"><button class="btn pri" data-act="closeSheet">Fermer</button></div></div></div>`}
