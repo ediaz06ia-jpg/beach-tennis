@@ -1,5 +1,15 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Beach tennis · Gestion de tournoi (v4.2)</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.setc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;background:var(--bg)}
+.sheet .sr{display:flex;align-items:center;gap:10px;padding:5px 0}
+.sheet .sr .tn{flex:1;min-width:0;font-weight:600}
+.sheet .sr input{width:88px;flex:none;min-height:54px;text-align:center;font:800 26px ui-rounded,system-ui,sans-serif;padding:0}
+.qs{margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.qn{display:block;font-size:12px;color:var(--muted);margin:4px 0}
+.qc{display:flex;flex-wrap:wrap;gap:6px}
+.qb{min-width:52px;min-height:44px;padding:0 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font:700 16px ui-rounded,system-ui,sans-serif;font-variant-numeric:tabular-nums;cursor:pointer}
+.qb:active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.stepper{display:flex;align-items:center;gap:10px}.stepper .btn{width:56px;flex:none;font-size:22px;padding:0}.stepper .stv{flex:1;text-align:center;font:800 18px ui-rounded,system-ui,sans-serif}
+</style></head><body>
+<title>Beach tennis · Gestion de tournoi (v4.3)</title>
 <style>
 :root{--bg:#EAF3F2;--surface:#FFFFFF;--ink:#0A2E38;--muted:#58747C;--line:#CFE0DF;--soft:#DCEBEA;--primary:#0A5566;--on-primary:#FFFFFF;--accent:#FFC21A;--on-accent:#2B2100;--live:#D9482B;--ok:#16794C;--shadow:0 1px 0 rgba(10,46,56,.06);
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -281,11 +291,11 @@ const PTBT=[[25,100,250,500,1000],[22,75,175,350,700],[21,65,140,270,540],[20,55
 const ptsBT=(rank,n)=>{const r=BTC[S.bt],row=rank<=32?PTBT[rank-1]:[1,2,4,10,20];let v=row[r.col];if(r.coef)v*=(n<=8?.6:n<=12?.7:n<=15?.8:1);return Math.round(v)};
 
 /* ---------- Données : plusieurs tournois ---------- */
-function newT(cat,bt){cat=cat||'M';return {id:uid(),name:'Nouveau tournoi',date:'',cat,bt:bt||'BT100',arch:false,teams:[],cfg:{courts:2,dur:{0:15,3:25,4:45,5:20,6:30},start:'09:00',form:cat==='X'?3:4,fmt:null,nc:0,rest:1},notif:{on:false,lead:10,all:false,teams:[]},g:null,res:{},upd:Date.now()}}
-function normT(t){const d=newT(),od=t.cfg&&t.cfg.dur;t.cfg=Object.assign({},d.cfg,t.cfg||{});t.cfg.dur=(od&&typeof od==='object')?Object.assign({},d.cfg.dur,od):Object.assign({},d.cfg.dur);
+function newT(cat,bt,mode){cat=cat||'M';return {id:uid(),mode:mode==='am'?'am':'fft',am:newAm(),name:mode==='am'?'Américano loisir':'Nouveau tournoi',date:'',cat,bt:bt||'BT100',arch:false,teams:[],cfg:{courts:2,dur:{0:15,3:25,4:45,5:20,6:30},start:'09:00',form:cat==='X'?3:4,fmt:null,nc:0,rest:1},notif:{on:false,lead:10,all:false,teams:[]},g:null,res:{},upd:Date.now()}}
+function normT(t){t.mode=t.mode==='am'?'am':'fft';t.am=Object.assign(newAm(),t.am||{});const d=newT(),od=t.cfg&&t.cfg.dur;t.cfg=Object.assign({},d.cfg,t.cfg||{});t.cfg.dur=(od&&typeof od==='object')?Object.assign({},d.cfg.dur,od):Object.assign({},d.cfg.dur);
   t.notif=Object.assign({on:false,lead:10,all:false,teams:[]},t.notif||{});t.notif.teams=t.notif.teams||[];t.teams=t.teams||[];t.teams.forEach(x=>{if(x.dr===undefined)x.dr=Math.random()});t.wa=Object.assign({link:'',sent:{}},t.wa||{});t.place=t.place||'';t.res=t.res||{};t.cat=CAT[t.cat]?t.cat:'M';t.bt=BTC[t.bt]?t.bt:'BT100';return t}
 function loadDB(){try{const j=JSON.parse(localStorage.getItem(KEY));if(j&&Array.isArray(j.items)&&j.items.length){j.items.forEach(normT);if(!j.items.some(t=>t.id===j.cur))j.cur=j.items[0].id;j.club=j.club||{};j.ranks=j.ranks||{};return j}}catch(e){}const t=newT('M');return {items:[t],cur:t.id,club:{},ranks:{}}}
-let DB=loadDB(),S,G=null,MM={},UI={tab:'teams',filter:'all',sheet:null,edit:null,lib:false,wa:false,watype:'',wamsg:'',confirm:null,newCat:'M',newBt:'BT100',bk:'',imp:'',fft:null,club:false,about:false,rk:false,nstat:'',tools:false};
+let DB=loadDB(),S,G=null,MM={},UI={tab:'teams',filter:'all',sheet:null,edit:null,lib:false,wa:false,watype:'',wamsg:'',confirm:null,newCat:'M',newBt:'BT100',newMode:'fft',amSheet:null,bk:'',imp:'',fft:null,club:false,about:false,rk:false,nstat:'',tools:false};
 function setG(g){G=g;MM=g?Object.fromEntries(g.matches.map(m=>[m.id,m])):{}}
 function withG(g,fn){const og=G;setG(g);try{return fn()}finally{setG(og)}}
 function useCur(){S=DB.items.find(t=>t.id===DB.cur)||DB.items[0];DB.cur=S.id;setG(S.g);if(S.g&&S.g.matches.some(m=>!m.auto&&m.t0===undefined))schedule(S.res)}
@@ -633,6 +643,7 @@ function viewResults(){
   return h}
 const scoreStr=(r)=>{const f=r.w==='a'?0:1;return r.sets.map(s=>f?s[1]+'-'+s[0]:s[0]+'-'+s[1]).join(' ')};
 function shareText(){
+  if(S.mode==='am')return amShareText();
   if(!S.g)return '';
   const rk=ranking(S.res),n=S.teams.length;let t=`🎾 ${S.name} · ${S.bt} · ${CAT[S.cat].n}${S.date?' · '+fmtD(S.date):''}\n\nCLASSEMENT\n`;
   for(let p=1;p<=n;p++)t+=`${p}. ${rk[p]?tn(rk[p]):'—'}\n`;
@@ -719,19 +730,20 @@ function editHtml(){
   ${S.cat==='M'&&(S.bt==='BT25'||S.bt==='BT100')?`<label class="lb" for="e-cmp">Composition de la paire</label><select id="e-cmp"><option value="HH" ${(t.comp||'HH')==='HH'?'selected':''}>Paire de messieurs</option><option value="HF" ${t.comp==='HF'?'selected':''}>Paire mixte</option><option value="FF" ${t.comp==='FF'?'selected':''}>Paire de dames</option></select>`:''}
   <div class="err" id="err" role="alert"></div>
   <div class="btnrow"><button class="btn pri" data-act="saveTeam">Enregistrer</button><button class="btn" data-act="closeSheet">Fermer</button></div></div></div>`}
-function stat(t){if(!t.g)return `${t.teams.length} équipe${t.teams.length>1?'s':''} · inscriptions`;const real=t.g.matches.filter(m=>!m.auto),d=real.filter(m=>t.res[m.id]).length;return d===real.length?'Terminé':`${d}/${real.length} matchs joués`}
+function stat(t){if(t.mode==='am'){const a=t.am,ms=a.sched?a.sched.flatMap(r=>r.matches):[],d=ms.filter(m=>a.res[m.id]).length;return a.sched?(d===ms.length?'Terminé':`${d}/${ms.length} matchs joués`):`${a.players.length} joueur${a.players.length>1?'s':''} · inscriptions`}if(!t.g)return `${t.teams.length} équipe${t.teams.length>1?'s':''} · inscriptions`;const real=t.g.matches.filter(m=>!m.auto),d=real.filter(m=>t.res[m.id]).length;return d===real.length?'Terminé':`${d}/${real.length} matchs joués`}
 function libHtml(){
   const act=DB.items.filter(t=>!t.arch),arc=DB.items.filter(t=>t.arch);
   const del=t=>`<button class="btn sm ${UI.confirm==='del'+t.id?'warn':''}" data-act="delT" data-id="${t.id}">${UI.confirm==='del'+t.id?'Confirmer':'Supprimer'}</button>`;
-  const row=t=>`<div class="lrow ${t.id===DB.cur?'cur':''}"><div class="lt"><b>${esc(t.name)}</b><small>${t.bt} · ${CAT[t.cat].n}${t.date?' · '+fmtD(t.date):''} · ${stat(t)}</small></div><div class="lb2">
+  const row=t=>`<div class="lrow ${t.id===DB.cur?'cur':''}"><div class="lt"><b>${esc(t.name)}</b><small>${t.mode==='am'?'Américano loisir':t.bt+' · '+CAT[t.cat].n}${t.date?' · '+fmtD(t.date):''} · ${stat(t)}</small></div><div class="lb2">
    ${t.id===DB.cur?'':`<button class="btn sm pri" data-act="openT" data-id="${t.id}">${t.arch?'Consulter':'Ouvrir'}</button>`}
    ${t.arch?`<button class="btn sm" data-act="unarch" data-id="${t.id}">Réactiver</button>`:t.id===DB.cur?`<button class="btn sm" data-act="archive">Archiver</button>`:''}${del(t)}</div></div>`;
   return `<div class="back" data-act="closeSheet" data-self="1"><div class="sheet" role="dialog" aria-modal="true"><h3>Mes tournois</h3>
   <p class="hint">${MAXACT} tournois actifs au maximum. Un tournoi archivé reste consultable (lecture seule) et peut être réactivé.</p>
   <h4>Actifs (${act.length}/${MAXACT})</h4>${act.map(row).join('')||'<p class="hint">Aucun tournoi actif.</p>'}
   <h4>Archivés (${arc.length})</h4>${arc.map(row).join('')||'<p class="hint">Aucun tournoi archivé.</p>'}
-  <h4>Nouveau tournoi</h4><div class="seg">${Object.keys(CAT).map(k=>`<button data-act="newCat" data-v="${k}" aria-pressed="${UI.newCat===k}">${CAT[k].n.replace('Double ','')}</button>`).join('')}</div>
-  <div class="seg" style="margin-top:6px">${Object.keys(BTC).map(k=>`<button data-act="newBt" data-v="${k}" aria-pressed="${UI.newBt===k}">${k}</button>`).join('')}</div>
+  <h4>Nouveau tournoi</h4><div class="seg"><button data-act="newMode" data-v="fft" aria-pressed="${UI.newMode!=='am'}">Tournoi FFT</button><button data-act="newMode" data-v="am" aria-pressed="${UI.newMode==='am'}">Américano loisir</button></div>
+  ${UI.newMode==='am'?'<p class="hint">Format loisir : les joueurs changent de partenaire à chaque match et les points gagnés se cumulent par joueur.</p>':`<div class="seg" style="margin-top:6px">${Object.keys(CAT).map(k=>`<button data-act="newCat" data-v="${k}" aria-pressed="${UI.newCat===k}">${CAT[k].n.replace('Double ','')}</button>`).join('')}</div>
+  <div class="seg" style="margin-top:6px">${Object.keys(BTC).map(k=>`<button data-act="newBt" data-v="${k}" aria-pressed="${UI.newBt===k}">${k}</button>`).join('')}</div>`}
   <button class="btn pri big" data-act="newT" ${act.length>=MAXACT?'disabled':''}>${act.length>=MAXACT?'2 tournois actifs : archive-en un d\'abord':'Créer un tournoi'}</button>
   <h4>Sauvegarde</h4><p class="hint">Les données restent dans ce navigateur. Exporte-les pour les conserver ou les ouvrir sur un autre appareil.</p>
   <div class="btnrow"><button class="btn" data-act="exportDB">Exporter</button><button class="btn" data-act="importDB">${UI.confirm==='imp'?'Confirmer : remplace tout':'Importer'}</button></div>
@@ -783,19 +795,22 @@ function viewDraw(){
   if(!G.blocks||!G.blocks.length)return ''+empty(G.fmt==='poule'?'Poule unique':'Tableau indisponible',G.fmt==='poule'?'Ce format se joue en poule unique : voir l\'onglet Poules.':'Repars de zéro dans l\'onglet Tournoi pour générer le tableau.');
   return ''+`<p class="hint">Touche un match pour saisir ou corriger le score. Contour vert : match prêt à jouer. Le tableau se remplit au fur et à mesure des résultats.</p>`+G.blocks.map(brHtml).join('')}
 
-const APP_VER='4.2',APP_DATE='14/11/2026';
+const APP_VER='4.3',APP_DATE='20/11/2026';
 const verHtml=()=>`<p class="ver"><button data-act="aboutOpen" aria-label="À propos, version ${APP_VER}">Beach tennis · Gestion de tournoi · version ${APP_VER} · ${APP_DATE}</button></p>`;
 function render(){
   const n=S.teams.length,act=DB.items.filter(t=>!t.arch).length;
   $('#ttl').textContent=S.name;$('#cat').textContent=S.bt+' · '+CAT[S.cat].n+(S.date?' · '+fmtD(S.date):'');
   $('#swb').textContent=`Mes tournois (${act}/${MAXACT})`;
   $('#sub').textContent=S.g?`${n} équipes · ${FMT[G.fmt].t} · ${S.cfg.courts} terrains`:`${n} équipe${n>1?'s':''} inscrite${n>1?'s':''}`;
+  if(S.mode==='am'){$('#cat').textContent='Américano loisir'+(S.date?' · '+fmtD(S.date):'');$('#sub').textContent=amSub()}
+  {const wb=document.querySelector('.sw.wa');if(wb)wb.hidden=S.mode==='am'}
   $('#ro').innerHTML=RO()?'<div>Tournoi archivé : consultation seule. Réactive-le dans « Mes tournois » pour le modifier.</div>':'';
-  const todo=S.g?G.matches.filter(m=>!m.auto&&!S.res[m.id]&&m.t0!=null).length:0;
-  const tabs=[['teams','Équipes'],['format','Tournoi'],['matches','Matchs'],['pools','Poules'],['draw','Tableau'],['results','Résultats']];
+  const am=S.mode==='am';if(am&&(UI.tab==='pools'||UI.tab==='draw'))UI.tab='matches';
+  const todo=am?amTodo():S.g?G.matches.filter(m=>!m.auto&&!S.res[m.id]&&m.t0!=null).length:0;
+  const tabs=am?[['teams','Joueurs'],['format','Réglages'],['matches','Matchs'],['results','Classement']]:[['teams','Équipes'],['format','Tournoi'],['matches','Matchs'],['pools','Poules'],['draw','Tableau'],['results','Résultats']];
   $('#nav').innerHTML=tabs.map(([k,l])=>`<button data-act="tab" data-v="${k}" ${UI.tab===k?'aria-current="page"':''}>${l}${k==='matches'&&todo?`<span class="cnt">${todo}</span>`:''}</button>`).join('');
-  const X=tabExtras();$('#app').innerHTML=X.pre+({teams:viewTeams,format:viewFormat,matches:viewMatches,pools:viewPools,draw:viewDraw,results:viewResults})[UI.tab]()+X.post+verHtml();applyClub();renderClub();
-  $('#sheetRoot').innerHTML=UI.lib?libHtml():UI.sheet?sheetHtml():UI.edit?editHtml():UI.fft?fftHtml():UI.rk?rkHtml():UI.club?clubHtml():UI.about?aboutHtml():UI.wa?waHtml():'';if(UI.sheet)scLive();
+  const X=tabExtras();$('#app').innerHTML=X.pre+(S.mode==='am'?{teams:amViewPlayers,format:amViewSettings,matches:amViewMatches,results:amViewRank}:{teams:viewTeams,format:viewFormat,matches:viewMatches,pools:viewPools,draw:viewDraw,results:viewResults})[UI.tab]()+X.post+verHtml();applyClub();renderClub();
+  $('#sheetRoot').innerHTML=UI.lib?libHtml():UI.amSheet?amSheetHtml():UI.sheet?sheetHtml():UI.edit?editHtml():UI.fft?fftHtml():UI.rk?rkHtml():UI.club?clubHtml():UI.about?aboutHtml():UI.wa?waHtml():'';if(UI.sheet)scLive();
 }
 function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>e.hidden=true,2800)}
 
@@ -811,8 +826,8 @@ const ACT={
   newCat(_,v){UI.newCat=v;render()},
   newBt(_,v){UI.newBt=v;render()},
   newT(){if(DB.items.filter(t=>!t.arch).length>=MAXACT)return toast('2 tournois actifs au maximum.');
-    if(UI.newCat==='X'&&UI.newBt==='BT1000')return toast('Pas de double mixte en BT1000.');const t=newT(UI.newCat,UI.newBt);DB.items.push(t);DB.cur=t.id;useCur();save();UI.lib=false;UI.tab='teams';render();toast('Nouveau tournoi créé.')},
-  openT(id){DB.cur=id;useCur();save();UI.lib=false;UI.tab=S.g?'matches':'teams';UI.filter='all';render()},
+    if(UI.newMode!=='am'&&UI.newCat==='X'&&UI.newBt==='BT1000')return toast('Pas de double mixte en BT1000.');const t=newT(UI.newCat,UI.newBt,UI.newMode==='am'?'am':'fft');DB.items.push(t);DB.cur=t.id;useCur();save();UI.lib=false;UI.tab='teams';render();toast('Nouveau tournoi créé.')},
+  openT(id){DB.cur=id;useCur();save();UI.lib=false;UI.tab=(S.g||amReady())?'matches':'teams';UI.filter='all';render()},
   archive(){S.arch=true;save();UI.lib=false;render();toast('Tournoi archivé : consultation seule.')},
   unarch(id){if(DB.items.filter(t=>!t.arch).length>=MAXACT)return toast('2 tournois actifs au maximum : archive-en un d\'abord.');
     DB.items.find(t=>t.id===id).arch=false;save();render();toast('Tournoi réactivé.')},
@@ -859,7 +874,7 @@ const ACT={
   open(id){const m=MM[id],a=rs(m.a,S.res),b=rs(m.b,S.res);
     if(!a||!b)return toast('Les équipes de ce match ne sont pas encore connues.');
     UI.sheet=id;UI.cf=null;render();const i=$('#i-0-a');if(i&&!RO())i.focus()},
-  closeSheet(){UI.sheet=null;UI.edit=null;UI.lib=false;UI.fft=null;UI.rk=false;UI.club=false;UI.about=false;UI.wa=false;UI.confirm=null;render()},
+  closeSheet(){UI.amSheet=null;UI.sheet=null;UI.edit=null;UI.lib=false;UI.fft=null;UI.rk=false;UI.club=false;UI.about=false;UI.wa=false;UI.confirm=null;render()},
   editTeam(id){if(S.g)return;UI.edit=id;render();const i=$('#e-a');if(i)i.focus()},
   saveTeam(){const t=S.teams.find(x=>x.id===UI.edit),v=k=>$('#e-'+k).value.trim(),err=m=>{$('#err').textContent=m};
     const a=v('a'),b=v('b'),la=normL(v('la')),lb=normL(v('lb')),ra=parseInt(v('ra'),10)||0,rb=parseInt(v('rb'),10)||0;
@@ -893,7 +908,7 @@ document.addEventListener('change',e=>{const id=e.target.id;
   if(/^dd[03456]$/.test(id)){const x=parseInt(e.target.value,10);if(x>=5&&x<=120){S.cfg.dur[+id[2]]=x;save()}else toast('Durée comprise entre 5 et 120 minutes.');render()}
   if(id==='ncrank'){S.cfg.nc=parseInt(e.target.value,10)||0;save();render()}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'){if(e.target.id==='j1')$('#j2').focus();else if(e.target.id==='j2')ACT.addTeam()}
-  if(e.key==='Escape'){if(KS.on)kioskClose();else if(UI.sheet||UI.edit||UI.lib||UI.fft||UI.rk||UI.club||UI.about||UI.wa)ACT.closeSheet()}});
+  if(e.key==='Escape'){if(KS.on)kioskClose();else if(UI.amSheet||UI.sheet||UI.edit||UI.lib||UI.fft||UI.rk||UI.club||UI.about||UI.wa)ACT.closeSheet()}});
 
 /* ================= v3 : import FFT, rappels, PDF, affichage public, couleurs du club ================= */
 const NATIVE=!!window.__btPost;
@@ -1027,7 +1042,9 @@ function toolsCard(){
 const pdfCard=()=>`<section class="card"><h2>Exporter en PDF</h2><p class="hint">Tableaux, poules, programme et classement, aux couleurs du club.</p><div class="btnrow"><button class="btn pri" data-act="pdf" ${CAN.pdf?'':'disabled'}>Exporter en PDF</button><button class="btn" data-act="kiosk">Affichage public</button></div></section>`;
 const clubCard=()=>`<section class="card"><h2>Club et informations</h2><div class="btnrow"><button class="btn" data-act="clubOpen">Club et couleurs</button><button class="btn" data-act="aboutOpen">À propos · Confidentialité</button></div></section>`;
 function tabExtras(){
-  const t=UI.tab;if(t==='format')return {pre:'',post:clubCard()};if(RO()||!S.g)return {pre:'',post:''};
+  const t=UI.tab;if(t==='format')return {pre:'',post:clubCard()};
+  if(S.mode==='am'){if(RO()||!S.am.sched)return {pre:'',post:''};return t==='matches'?{pre:pdfCard(),post:''}:t==='results'?{pre:'',post:pdfCard()}:{pre:'',post:''}}
+  if(RO()||!S.g)return {pre:'',post:''};
   if(t==='matches')return {pre:toolsCard(),post:''};
   if(t==='draw')return {pre:pdfCard(),post:''};
   if(t==='results')return {pre:'',post:pdfCard()};
@@ -1072,6 +1089,7 @@ const safeName=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A
 /* ---------- Affichage public (écran du club) ---------- */
 const KS={on:false,i:0,t:null,sec:0,pause:false,sig:'',ct:null,wl:null};
 function kPanels(){
+  if(S.mode==='am')return [{k:'amnow',t:'Programme'},{k:'amrank',t:'Classement'}];
   const P=[{k:'now',t:'Programme'}];
   (G.blocks||[]).forEach(b=>{const ms=G.matches.filter(m=>m.bk===b.bk);if(!ms.length)return;P.push({k:'draw',b,t:b.title});if(groupsHtml(ms))P.push({k:'cons',b,t:b.title+' · classement'})});
   if(Object.keys(G.pools).length)P.push({k:'pools',t:'Poules'});
@@ -1095,7 +1113,7 @@ function kRank(){const r=ranking(S.res),n=S.teams.length;
 function kPaint(){
   const P=kPanels();if(KS.i>=P.length||KS.i<0)KS.i=0;const p=P[KS.i],body=$('#kbody');if(!body)return;KS.sig=String(S.upd);
   let h='';
-  if(p.k==='now')h=kNow();else if(p.k==='res')h=kRes();else if(p.k==='rank')h=kRank();
+  if(p.k==='amnow')h=amKNow();else if(p.k==='amrank')h=amKRank();else if(p.k==='now')h=kNow();else if(p.k==='res')h=kRes();else if(p.k==='rank')h=kRank();
   else if(p.k==='pools')h=`<div class="kpools">${Object.keys(G.pools).map(x=>poolTable(x,S.res)).join('')}</div>`;
   else if(p.k==='draw'||p.k==='cons'){const core=brCore(p.b,{});h=`<div class="kfit">${p.k==='draw'?core.html:groupsHtml(core.ms)}</div>`}
   body.innerHTML=`<h2>${esc(p.t)}</h2>${h}`;
@@ -1108,10 +1126,10 @@ function kTick(){
   if(KS.sec>=12){KS.sec=0;KS.i++;kPaint()}else if(KS.sig!==String(S.upd))kPaint()}
 function kCtl(){const c=$('#kctl');if(!c)return;c.hidden=false;clearTimeout(KS.ct);KS.ct=setTimeout(()=>{c.hidden=true},5000)}
 function kioskOpen(){
-  if(!S.g)return toast('Génère d\'abord le tournoi.');if(KS.on)return;
+  if(!S.g&&!amReady())return toast('Génère d\'abord le tournoi.');if(KS.on)return;
   KS.on=true;KS.i=0;KS.sec=0;KS.pause=false;
   const c=DB.club||{},el=document.createElement('div');el.id='kiosk';
-  el.innerHTML=`<header class="kh">${c.logo?`<img src="${c.logo}" alt="">`:''}<div class="t"><b>${esc(c.name||S.name)}</b><small>${c.name?esc(S.name)+' · ':''}${S.bt} · ${CAT[S.cat].n}${S.date?' · '+fmtD(S.date):''}</small></div><span class="kc" id="kclock"></span></header><main class="kb" id="kbody"></main><footer class="kf" id="kdots"></footer>
+  el.innerHTML=`<header class="kh">${c.logo?`<img src="${c.logo}" alt="">`:''}<div class="t"><b>${esc(c.name||S.name)}</b><small>${c.name?esc(S.name)+' · ':''}${S.mode==='am'?'Américano loisir':S.bt+' · '+CAT[S.cat].n}${S.date?' · '+fmtD(S.date):''}</small></div><span class="kc" id="kclock"></span></header><main class="kb" id="kbody"></main><footer class="kf" id="kdots"></footer>
   <div class="kctl" id="kctl" hidden><button class="btn" data-act="kPrev" aria-label="Écran précédent">◀</button><button class="btn" data-act="kPause" id="kpause" aria-label="Pause">⏸</button><button class="btn" data-act="kNext" aria-label="Écran suivant">▶</button><button class="btn warn" data-act="kExit">Quitter</button></div>`;
   document.body.appendChild(el);document.body.classList.add('kiosk');
   el.addEventListener('click',e=>{if(!e.target.closest('[data-act]'))kCtl()});
@@ -1153,7 +1171,7 @@ Object.assign(ACT,{
   clubReset(){DB.club.c1='';DB.club.c2='';save();render()},
   clubRmLogo(){DB.club.logo='';save();render()},
   toolsToggle(){},
-  pdf(){if(!S.g)return toast('Génère d\'abord le tournoi.');const html=printDoc(),name=safeName(S.name)+(S.date?'-'+S.date:'')+'.pdf';
+  pdf(){if(!S.g&&!amReady())return toast('Génère d\'abord le tournoi.');const html=S.mode==='am'?amPrintDoc():printDoc(),name=safeName(S.name)+(S.date?'-'+S.date:'')+'.pdf';
     if(NATIVE){post({type:'pdf',html,name});toast('Préparation du PDF…');return}
     if(!CAN.pdf)return toast('Export PDF indisponible dans cette fenêtre.');
     const fr=document.createElement('iframe');fr.setAttribute('aria-hidden','true');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
@@ -1331,8 +1349,213 @@ document.addEventListener('keydown',e=>{
     const all=[...document.querySelectorAll('#sets input')].filter(x=>!x.closest('[hidden]')),i=all.indexOf(e.target);
     if(i<all.length-1)all[i+1].focus();else ACT.saveScore()}});
 
+/* ================= v6 : Américano loisir (joueurs individuels, partenaires qui changent, points cumulés par joueur) ================= */
+/*AM-ENGINE-START*/
+const AMMAX=40;
+const amKey=(x,y)=>x<y?x+'|'+y:y+'|'+x;
+const amAuto=n=>Math.min(8,Math.max(3,n-1));
+/* Tirage des tours : méthode du cercle quand tout le monde joue à chaque tour (aucun partenaire répété sur n-1 tours),
+   sinon recherche aléatoire avec amélioration locale ; les joueurs au repos tournent équitablement. */
+function amGen(am){
+  const P=am.players.map(p=>p.id),n=P.length,act=4*Math.min(am.courts,Math.floor(n/4)),R=am.rounds||amAuto(n);
+  const part={},opp={},rests={},last={},rounds=[];
+  const cnt=(o,x,y)=>o[amKey(x,y)]||0;
+  const cost=a=>{let c=0;for(let i=0;i<a.length;i+=4){const p=a[i],q=a[i+1],r=a[i+2],s=a[i+3];
+    c+=50*(cnt(part,p,q)+cnt(part,r,s))+cnt(opp,p,r)+cnt(opp,p,s)+cnt(opp,q,r)+cnt(opp,q,s)}return c};
+  const circle=act===n&&n%4===0;let ring=shuf(P);
+  for(let r=0;r<R;r++){
+    let rest=[],playing=P;
+    if(act<n){const ord=shuf(P).sort((x,y)=>(rests[x]||0)-(rests[y]||0)||(last[x]===undefined?-1:last[x])-(last[y]===undefined?-1:last[y]));
+      rest=ord.slice(0,n-act);playing=P.filter(x=>!rest.includes(x))}
+    let arr,best=null,bc=1e9;
+    if(circle&&r<n-1){
+      const pairs=[];for(let i=0;i<n/2;i++)pairs.push([ring[i],ring[n-1-i]]);
+      ring=[ring[0],ring[n-1],...ring.slice(1,n-1)];
+      for(let t=0;t<300;t++){const a=shuf(pairs).flat(),c=cost(a);if(c<bc){bc=c;best=a;if(c===0)break}}
+      arr=best}
+    else{
+      for(let t=0;t<60;t++){const a=shuf(playing),c=cost(a);if(c<bc){bc=c;best=a}}
+      for(let t=0;t<800&&bc>0;t++){const i=Math.floor(Math.random()*act),j=Math.floor(Math.random()*act);if(i===j)continue;
+        const a=best.slice();[a[i],a[j]]=[a[j],a[i]];const c=cost(a);if(c<=bc){best=a;bc=c}}
+      arr=best}
+    const m=act/4,ms=[];
+    for(let i=0,j=0;i<act;i+=4,j++)ms.push({id:`r${r+1}m${j+1}`,court:((j+r)%m)+1,a:[arr[i],arr[i+1]],b:[arr[i+2],arr[i+3]]});
+    ms.sort((x,y)=>x.court-y.court);
+    ms.forEach(x=>{part[amKey(x.a[0],x.a[1])]=cnt(part,x.a[0],x.a[1])+1;part[amKey(x.b[0],x.b[1])]=cnt(part,x.b[0],x.b[1])+1;
+      x.a.forEach(p=>x.b.forEach(q=>{opp[amKey(p,q)]=cnt(opp,p,q)+1}))});
+    rest.forEach(x=>{rests[x]=(rests[x]||0)+1;last[x]=r});
+    rounds.push({r:r+1,rest,matches:ms})}
+  return rounds}
+/* Points cumulés par joueur : chaque joueur marque les points de son équipe */
+function amStats(am){
+  const T={};am.players.forEach(p=>{T[p.id]={id:p.id,name:p.name,pts:0,j:0,v:0,n:0,d:0,diff:0}});
+  (am.sched||[]).forEach(rd=>rd.matches.forEach(m=>{const r=am.res[m.id];if(!r)return;
+    [[m.a,r.a,r.b],[m.b,r.b,r.a]].forEach(([team,f,c])=>team.forEach(id=>{const t=T[id];if(!t)return;t.pts+=f;t.diff+=f-c;t.j++;if(f>c)t.v++;else if(f<c)t.d++;else t.n++}))}));
+  const rows=Object.values(T);rows.forEach(t=>{t.avg=t.j?t.pts/t.j:0});
+  const k=am.rankBy==='avg'?'avg':'pts';
+  rows.sort((x,y)=>(y[k]-x[k])||(y.diff-x.diff)||(y.v-x.v)||x.name.localeCompare(y.name,'fr'));
+  rows.forEach((t,i)=>{const p=rows[i-1];t.rank=p&&p[k]===t[k]&&p.diff===t.diff&&p.v===t.v?p.rank:i+1});
+  return rows}
+/* Qualité du tirage : partenaires différents par joueur et partenaires répétés */
+function amQuality(am){
+  const P={},rep={};let repeats=0;
+  am.players.forEach(p=>{P[p.id]=new Set()});
+  am.sched.forEach(rd=>rd.matches.forEach(m=>[m.a,m.b].forEach(([x,y])=>{if(P[x].has(y))repeats++;P[x].add(y);P[y].add(x)})));
+  const sz=Object.values(P).map(s=>s.size);
+  return {min:Math.min(...sz),max:Math.max(...sz),repeats,matches:am.sched.reduce((n,r)=>n+r.matches.length,0)}}
+/*AM-ENGINE-END*/
+
+function newAm(){return {players:[],courts:2,rounds:0,total:24,dur:15,start:'09:00',rankBy:'total',sched:null,res:{}}}
+const amReady=()=>S.mode==='am'&&!!S.am.sched;
+const amNm=()=>Object.fromEntries(S.am.players.map(p=>[p.id,p.name]));
+const amHm=r=>{const [h,m]=(S.am.start||'09:00').split(':').map(Number),t=h*60+m+r*(+S.am.dur||15);return String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0')};
+const fmt1=x=>(Math.round(x*10)/10).toFixed(1).replace('.',',');
+const amTeam=(ids,nm)=>esc(ids.map(x=>nm[x]).join(' + '));
+const amMatches=()=>S.am.sched?S.am.sched.flatMap(r=>r.matches):[];
+const amTodo=()=>amMatches().filter(m=>!S.am.res[m.id]).length;
+const amSub=()=>{const a=S.am,n=a.players.length;return `${n} joueur${n>1?'s':''} · ${a.courts} terrain${a.courts>1?'s':''}${a.sched?' · '+a.sched.length+' tours':''}`};
+
+function amViewPlayers(){
+  const am=S.am,n=am.players.length,locked=!!am.sched||RO();
+  return `<section class="card"><h2>Joueurs · Américano loisir</h2>
+  <p class="hint">${n} joueur${n>1?'s':''} inscrit${n>1?'s':''} · de 4 à ${AMMAX} · les partenaires changent à chaque match.</p>
+  ${locked?`<p class="note">${RO()?'Tournoi archivé : consultation seule.':'Le tournoi est généré : la liste des joueurs est verrouillée. Repars de zéro dans l\'onglet Réglages pour la modifier.'}</p>`:`
+  <div class="addrow" style="grid-template-columns:1fr"><input id="pl-name" placeholder="Nom du joueur" autocomplete="off" enterkeyhint="done" maxlength="30"><button class="btn pri" data-act="amAdd" ${n>=AMMAX?'disabled':''}>Ajouter le joueur</button></div>`}
+  ${n?`<ol class="teams">${am.players.map((p,i)=>`<li><span class="seed">${i+1}</span><span class="tn">${esc(p.name)}</span>${locked?'':`<span class="tools"><button aria-label="Supprimer ${esc(p.name)}" data-act="amDel" data-id="${p.id}">✕</button></span>`}</li>`).join('')}</ol>`:'<p class="hint">Aucun joueur pour l\'instant.</p>'}
+  ${locked?'':`<details><summary>Importer une liste de joueurs</summary><textarea id="pl-bulk" placeholder="Un nom par ligne (ou séparés par des virgules)"></textarea><button class="btn" data-act="amBulk" style="margin-top:8px">Importer</button></details>
+  <div class="btnrow"><button class="btn" data-act="amDemo" data-v="8">Exemple 8</button><button class="btn" data-act="amDemo" data-v="12">Exemple 12</button><button class="btn" data-act="amDemo" data-v="16">Exemple 16</button></div>`}
+  <button class="btn pri big" data-act="tab" data-v="format" ${n<4?'disabled':''}>${n<4?`Encore ${4-n} joueur${4-n>1?'s':''} minimum`:'Régler le tournoi'}</button></section>`}
+
+function amViewSettings(){
+  const am=S.am,n=am.players.length,lock=!!am.sched||RO(),R=am.rounds||amAuto(n),act=4*Math.min(am.courts,Math.floor(n/4)),per=act/4,rest=n-act;
+  const seg=(k,items,cur,dis)=>`<div class="seg">${items.map(([v,l])=>`<button data-act="amCfg" data-id="${k}" data-v="${v}" aria-pressed="${String(cur)===String(v)}" ${dis?'disabled':''}>${l}</button>`).join('')}</div>`;
+  const q=am.sched?amQuality(am):null,done=amMatches().filter(m=>am.res[m.id]).length;
+  return `<section class="card"><h2>Réglages · Américano</h2>
+    <label class="lb" for="am-name">Nom du tournoi</label><input id="am-name" value="${esc(S.name)}">
+    <label class="lb" for="am-date">Date</label><input type="date" id="am-date" value="${S.date||''}">
+    <label class="lb">Terrains disponibles</label>${seg('courts',[[1,'1'],[2,'2'],[3,'3'],[4,'4'],[6,'6'],[8,'8']],am.courts,lock)}
+    <label class="lb">Nombre de tours</label><div class="stepper"><button class="btn" data-act="amCfg" data-id="rounds" data-v="-1" aria-label="Un tour de moins" ${lock?'disabled':''}>−</button><span class="stv">${am.rounds?am.rounds+' tours':'Auto · '+R+' tours'}</span><button class="btn" data-act="amCfg" data-id="rounds" data-v="1" aria-label="Un tour de plus" ${lock?'disabled':''}>+</button></div>
+    <label class="lb">Points par match</label>${seg('total',[[16,'16'],[20,'20'],[24,'24'],[32,'32'],[0,'Libre']],am.total,lock)}
+    <p class="hint">${am.total?`Total fixé à ${am.total} points : le score de la deuxième équipe se complète tout seul à la saisie.`:'Score libre : les deux équipes saisissent leurs points (égalité possible).'}</p>
+    <label class="lb">Classement par</label>${seg('rankBy',[['total','Total de points'],['avg','Moyenne par match']],am.rankBy,RO())}
+    <label class="lb" for="am-dur">Durée d'un match (minutes)</label><input id="am-dur" inputmode="numeric" value="${am.dur}">
+    <label class="lb" for="am-start">Heure du premier match</label><input type="time" id="am-start" value="${am.start}">
+    <p class="hint">${n<4?'Ajoute au moins 4 joueurs.':`${per} match${per>1?'s':''} par tour · ${act} joueurs sur le terrain${rest?` · ${rest} au repos à chaque tour (à tour de rôle)`:''} · ${R} tours · durée ${dur(R*am.dur)} · fin vers ${amHm(R)}.`}</p>
+    ${am.sched?'':`<button class="btn pri big" data-act="amGen" ${n<4||RO()?'disabled':''}>Générer le tournoi</button>`}</section>
+  ${am.sched?`<section class="card"><h2>Tournoi généré</h2><p class="hint">${am.sched.length} tours · ${q.matches} matchs · ${done} saisi${done>1?'s':''}.</p>
+    <ul class="hint"><li>Chaque joueur a eu entre ${q.min} et ${q.max} partenaires différents.</li><li>${q.repeats?`${q.repeats} partenariat${q.repeats>1?'s':''} répété${q.repeats>1?'s':''} (inévitable avec ce nombre de joueurs et de tours).`:'Aucun partenaire répété.'}</li></ul>
+    ${RO()?'':`<div class="btnrow"><button class="btn ${UI.confirm==='amreset'?'warn':''}" data-act="amReset">${UI.confirm==='amreset'?'Confirmer : effacer les tours et scores':'Repartir de zéro'}</button></div><p class="hint">Les joueurs sont conservés. Une fois les tours générés, terrains, nombre de tours et points par match sont verrouillés.</p>`}</section>`:''}`}
+
+function amCard(m,rd,nm){const r=S.am.res[m.id];
+  return `<button class="match ${r?'done':''}" data-act="amOpen" data-id="${m.id}"><div class="when"><b>${amHm(rd.r-1)}</b><span>Terrain ${m.court}</span></div>
+  <div class="body"><div class="lab">Tour ${rd.r}</div>
+  <div class="row ${r&&r.a>r.b?'w':''}"><span class="t">${amTeam(m.a,nm)}</span>${r?`<span class="sc"><i>${r.a}</i></span>`:''}</div>
+  <div class="row ${r&&r.b>r.a?'w':''}"><span class="t">${amTeam(m.b,nm)}</span>${r?`<span class="sc"><i>${r.b}</i></span>`:''}</div></div></button>`}
+function amViewMatches(){
+  const am=S.am;
+  if(!am.sched)return empty('Aucun tournoi généré','Ajoute au moins 4 joueurs puis génère les tours dans l\'onglet Réglages.',`<div class="btnrow"><button class="btn pri" data-act="tab" data-v="format">Aller aux réglages</button></div>`);
+  const nm=amNm(),cur=am.sched.find(rd=>rd.matches.some(m=>!am.res[m.id])),chip=(v,l)=>`<button data-act="filter" data-v="${v}" aria-pressed="${UI.filter===v}">${l}</button>`;
+  let h=`<div class="chips">${chip('all','Tous')}${chip('todo','À jouer')}${chip('done','Terminés')}</div>`,any=false;
+  am.sched.forEach(rd=>{const ms=rd.matches.filter(m=>UI.filter==='all'||(UI.filter==='todo'?!am.res[m.id]:!!am.res[m.id]));if(!ms.length)return;any=true;
+    h+=`<div class="slot">Tour ${rd.r} · ${amHm(rd.r-1)}${cur&&cur.r===rd.r?' · en cours':''}</div>${rd.rest.length?`<p class="hint" style="margin:0 0 4px">Au repos : ${rd.rest.map(x=>esc(nm[x])).join(', ')}</p>`:''}${ms.map(m=>amCard(m,rd,nm)).join('')}`});
+  return any?h:h+empty('Rien à afficher','Aucun match dans cette liste.')}
+function amSheetHtml(){
+  const am=S.am,mid=UI.amSheet;let m=null,rd=null;am.sched&&am.sched.forEach(x=>x.matches.forEach(y=>{if(y.id===mid){m=y;rd=x}}));if(!m)return '';
+  const nm=amNm(),r=am.res[mid],ro=RO(),tot=+am.total||0,A=m.a.map(x=>nm[x]).join(' + '),B=m.b.map(x=>nm[x]).join(' + ');
+  const inp=(id,lab,v)=>`<input id="${id}" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${v==null?'':v}" aria-label="Points de ${esc(lab)}" ${ro?'disabled':''}>`;
+  return `<div class="back" data-act="closeSheet" data-self="1"><div class="sheet" role="dialog" aria-modal="true"><h3>Tour ${rd.r} · Terrain ${m.court}</h3>
+  <div class="hint">${amHm(rd.r-1)} · ${tot?`match en ${tot} points au total`:'score libre'}</div>
+  <div class="setc"><div class="sr"><span class="tn">${esc(A)}</span>${inp('am-a',A,r&&r.a)}</div><div class="sr"><span class="tn">${esc(B)}</span>${inp('am-b',B,r&&r.b)}</div>
+  ${tot&&!ro?`<div class="qs"><span class="qn">Points de ${esc(A)}</span><span class="qc">${Array.from({length:tot+1},(_,i)=>`<button type="button" class="qb" data-act="amQs" data-v="${i}">${i}</button>`).join('')}</span></div>`:''}</div>
+  <p class="hint">${tot?'Le score de l\'autre équipe se complète tout seul. ':''}Chaque joueur marque les points de son équipe.</p>
+  <div class="err" id="err" role="alert"></div>
+  <div class="btnrow">${ro?'':`<button class="btn pri" data-act="amSave">Enregistrer</button>${r?'<button class="btn warn" data-act="amClear">Effacer</button>':''}`}<button class="btn" data-act="closeSheet">Fermer</button></div></div></div>`}
+function amViewRank(){
+  const am=S.am;if(!am.sched)return empty('Pas encore de classement','Génère le tournoi pour suivre les points de chaque joueur.');
+  const st=amStats(am),all=amMatches(),done=all.filter(m=>am.res[m.id]).length;
+  return `<section class="card"><h2>Classement individuel</h2><p class="hint">${am.rankBy==='avg'?'Classé par moyenne de points par match':'Classé par total de points'} · ${done}/${all.length} matchs saisis. Égalité : différence de points, puis victoires.</p>
+  <table class="st"><tr><th>#</th><th class="n">Joueur</th><th>Pts</th><th>M</th><th>V</th><th>Diff</th><th>Moy</th></tr>
+  ${st.map(r=>`<tr class="${r.rank<=3&&r.j?'q':''}"><td>${r.rank}</td><td class="n">${esc(r.name)}</td><td>${r.pts}</td><td>${r.j}</td><td>${r.v}</td><td>${r.diff>0?'+':''}${r.diff}</td><td>${fmt1(r.avg)}</td></tr>`).join('')}</table>
+  <p class="hint">Pts : total des points de l'équipe à chaque match · M : matchs joués · V : victoires · Diff : points marqués moins points encaissés · Moy : points par match.</p></section>
+  <section class="card"><h2>Publier les résultats</h2><p class="hint">Envoie le classement et les derniers scores aux joueurs.</p>
+   <pre class="share" id="shareTxt">${esc(shareText())}</pre>
+   <div class="btnrow"><button class="btn pri" data-act="share">Partager</button><a class="btn" style="display:grid;place-items:center;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(shareText())}">WhatsApp</a><button class="btn" data-act="copy">Copier le texte</button></div></section>`}
+function amShareText(){
+  const am=S.am;if(!am.sched)return '';
+  const st=amStats(am),nm=amNm(),all=am.sched.flatMap(rd=>rd.matches.map(m=>({m,rd}))),done=all.filter(x=>am.res[x.m.id]);
+  let t=`🎾 ${S.name}${/am[ée]ricano/i.test(S.name)?'':' · Américano loisir'}${S.date?' · '+fmtD(S.date):''}\n\nCLASSEMENT (${am.rankBy==='avg'?'moyenne par match':'total des points'})\n`;
+  st.forEach(r=>{t+=`${r.rank}. ${r.name} — ${r.pts} pts (${r.j} match${r.j>1?'s':''}, ${r.v}V)\n`});
+  if(done.length){t+='\nDERNIERS RÉSULTATS\n';done.slice(-8).forEach(({m,rd})=>{const r=am.res[m.id];t+=`Tour ${rd.r} : ${m.a.map(x=>nm[x]).join(' + ')} ${r.a}-${r.b} ${m.b.map(x=>nm[x]).join(' + ')}\n`})}
+  const nx=am.sched.find(rd=>rd.matches.some(m=>!am.res[m.id]));
+  if(nx){t+=`\nTOUR ${nx.r} · ${amHm(nx.r-1)}\n`;nx.matches.forEach(m=>{t+=`Terrain ${m.court} : ${m.a.map(x=>nm[x]).join(' + ')} / ${m.b.map(x=>nm[x]).join(' + ')}\n`});if(nx.rest.length)t+=`Au repos : ${nx.rest.map(x=>nm[x]).join(', ')}\n`}
+  return t.trim()}
+/* Affichage public et PDF */
+function amKNow(){
+  const am=S.am,nm=amNm(),cur=am.sched.find(rd=>rd.matches.some(m=>!am.res[m.id]));
+  if(!cur){const st=amStats(am),top=st.filter(r=>r.rank===1);return `<div class="kcard"><div class="kn">Tournoi terminé</div><p>${top.length>1?'Vainqueurs':'Vainqueur'} : <b>${esc(top.map(r=>r.name).join(', '))}</b> · ${top[0]?top[0].pts:0} pts</p></div>`}
+  const mc=m=>{const r=am.res[m.id];return `<div class="kcard"><div class="kt"><span>Terrain ${m.court}</span><span>${amHm(cur.r-1)}</span></div><div class="kn">${amTeam(m.a,nm)}${r?` <b>${r.a}</b>`:''}</div><div class="kv">contre</div><div class="kn">${amTeam(m.b,nm)}${r?` <b>${r.b}</b>`:''}</div></div>`};
+  let h=`<div class="kcourts">${cur.matches.map(mc).join('')}</div>${cur.rest.length?`<p class="hint">Au repos : ${cur.rest.map(x=>esc(nm[x])).join(', ')}</p>`:''}`;
+  const nx=am.sched.find(rd=>rd.r===cur.r+1);
+  if(nx)h+=`<h3>Tour ${nx.r} · ${amHm(nx.r-1)}</h3><div class="knext">${nx.matches.map(m=>`<div class="krow"><b>T${m.court}</b><span class="kx">${amTeam(m.a,nm)} <i>/</i> ${amTeam(m.b,nm)}</span></div>`).join('')}</div>`;
+  return h}
+function amKRank(){return `<ol class="rk kcols">${amStats(S.am).map(r=>`<li><span class="p">${r.rank}</span><span class="tn">${esc(r.name)}</span><span class="pt">${r.pts} pts</span></li>`).join('')}</ol>`}
+function amPrintDoc(){
+  const c=DB.club||{},P=hex6(c.c1)||'#0A5566',am=S.am,nm=amNm(),st=amStats(am);
+  const css=`:root{--primary:${P};--on-primary:${onCol(P,'#0A2E38','#FFFFFF')}}*{box-sizing:border-box;-webkit-print-color-adjust:exact}body{margin:0;font:11px/1.35 system-ui,-apple-system,sans-serif;color:#0A2E38;background:#fff}
+  .hd{display:flex;align-items:center;gap:12px;border-bottom:3px solid var(--primary);padding-bottom:8px;margin-bottom:10px}.hd img{height:44px;max-width:120px;object-fit:contain}.hd h1{margin:0;font:800 20px ui-rounded,system-ui,sans-serif;color:var(--primary)}.hd small{color:#58747C;display:block}
+  h2{margin:0 0 8px;font:800 15px ui-rounded,system-ui,sans-serif;color:var(--primary)}section.pg{page-break-before:always}table{width:100%;border-collapse:collapse}th{background:var(--primary);color:var(--on-primary);text-align:left;padding:4px 6px;font-size:10px}td{padding:4px 6px;border-bottom:1px solid #CFE0DF;font-size:10.5px}tr{break-inside:avoid}.c{text-align:center}.ft{margin-top:8px;color:#58747C;font-size:9px}`;
+  let h=`<div class="hd">${c.logo?`<img src="${c.logo}" alt="">`:''}<div><h1>${esc(c.name?c.name+' · '+S.name:S.name)}</h1><small>Américano loisir${S.date?' · '+fmtD(S.date):''} · ${am.players.length} joueurs · ${am.sched.length} tours · ${am.total?am.total+' points par match':'score libre'}</small></div></div>
+  <section><h2>Classement individuel</h2><table><tr><th class="c">#</th><th>Joueur</th><th class="c">Pts</th><th class="c">Matchs</th><th class="c">V</th><th class="c">Diff</th><th class="c">Moy</th></tr>${st.map(r=>`<tr><td class="c">${r.rank}</td><td>${esc(r.name)}</td><td class="c">${r.pts}</td><td class="c">${r.j}</td><td class="c">${r.v}</td><td class="c">${r.diff>0?'+':''}${r.diff}</td><td class="c">${fmt1(r.avg)}</td></tr>`).join('')}</table></section>
+  <section class="pg"><h2>Programme des tours</h2><table><tr><th class="c">Tour</th><th class="c">Heure</th><th class="c">Terrain</th><th>Équipe 1</th><th>Équipe 2</th><th class="c">Score</th></tr>${am.sched.flatMap(rd=>rd.matches.map(m=>{const r=am.res[m.id];return `<tr><td class="c">${rd.r}</td><td class="c">${amHm(rd.r-1)}</td><td class="c">${m.court}</td><td>${amTeam(m.a,nm)}</td><td>${amTeam(m.b,nm)}</td><td class="c">${r?r.a+' - '+r.b:''}</td></tr>`})).join('')}</table>
+  <p class="ft">Document généré le ${new Date().toLocaleDateString('fr-FR')} par l'application Tournoi Beach Tennis.</p></section>`;
+  return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>${esc(S.name)}</title><style>${css}</style></head><body>${h}</body></html>`}
+
+/* Actions */
+['amAdd','amDel','amBulk','amDemo','amCfg','amGen','amReset','amSave','amClear'].forEach(a=>MUT.add(a));
+const amNames=['Camille','Hugo','Léa','Nathan','Chloé','Louis','Manon','Jules','Inès','Adam','Sarah','Théo','Emma','Lucas','Clara','Noah'];
+function amPush(raw){const have=new Set(S.am.players.map(p=>fold(p.name)));let add=0,skip=0;
+  raw.forEach(x=>{x=x.trim().slice(0,30);if(!x)return;if(S.am.players.length>=AMMAX||have.has(fold(x))){skip++;return}S.am.players.push({id:uid(),name:x});have.add(fold(x));add++});return {add,skip}}
+Object.assign(ACT,{
+  amAdd(){if(S.am.sched)return;const el=$('#pl-name'),nm=el.value.trim();if(!nm)return toast('Saisis le nom du joueur.');
+    const r=amPush([nm]);if(!r.add)return toast(S.am.players.length>=AMMAX?AMMAX+' joueurs maximum.':'Ce joueur est déjà inscrit.');save();render();const e=$('#pl-name');if(e)e.focus()},
+  amDel(id){if(S.am.sched)return;S.am.players=S.am.players.filter(p=>p.id!==id);save();render()},
+  amBulk(){if(S.am.sched)return;const r=amPush($('#pl-bulk').value.split(/[\r\n,;]+/));save();render();toast(`${r.add} joueur${r.add>1?'s':''} importé${r.add>1?'s':''}${r.skip?`, ${r.skip} ignoré${r.skip>1?'s':''}`:''}.`)},
+  amDemo(_,v){if(S.am.sched)return;S.am.players=amNames.slice(0,+v).map(name=>({id:uid(),name}));S.am.rounds=0;save();render()},
+  amCfg(k,v){const am=S.am;
+    if(k==='rankBy'){am.rankBy=v==='avg'?'avg':'total';save();render();return}
+    if(am.sched)return;
+    if(k==='courts')am.courts=+v;
+    else if(k==='total')am.total=+v;
+    else if(k==='rounds'){const cur=am.rounds||amAuto(am.players.length);am.rounds=Math.max(1,Math.min(20,cur+(+v)))}
+    save();render()},
+  amGen(){const am=S.am;if(am.players.length<4)return toast('Il faut au moins 4 joueurs.');
+    am.sched=amGen(am);am.res={};UI.tab='matches';UI.filter='all';save();render();scrollTo(0,0);toast('Tours générés.')},
+  amReset(){if(UI.confirm!=='amreset'){UI.confirm='amreset';render();return}
+    S.am.sched=null;S.am.res={};UI.confirm=null;save();render();toast('Tours effacés. Les joueurs sont conservés.')},
+  amOpen(id){UI.amSheet=id;render()},
+  amQs(_,v){const tot=+S.am.total||0,a=$('#am-a'),b=$('#am-b');if(!a||!b)return;a.value=v;b.value=Math.max(0,tot-(+v))},
+  amSave(){const am=S.am,mid=UI.amSheet,err=t=>{$('#err').textContent=t};
+    const g=id=>{const x=$(id).value.trim();return x===''?null:parseInt(x,10)},a=g('#am-a'),b=g('#am-b'),tot=+am.total||0;
+    if(a==null||b==null||isNaN(a)||isNaN(b))return err('Renseigne les points des deux équipes.');
+    if(a<0||b<0)return err('Les points ne peuvent pas être négatifs.');
+    if(tot&&a+b!==tot)return err(`Le total des deux équipes doit faire ${tot} points (actuellement ${a+b}).`);
+    am.res[mid]={a,b};UI.amSheet=null;save();render();toast('Résultat enregistré.')},
+  amClear(){delete S.am.res[UI.amSheet];UI.amSheet=null;save();render();toast('Résultat effacé.')},
+  newMode(_,v){UI.newMode=v==='am'?'am':'fft';render()}
+});
+document.addEventListener('input',e=>{const id=e.target.id;if(id!=='am-a'&&id!=='am-b')return;
+  const tot=+(S.am&&S.am.total)||0;if(!tot)return;const x=parseInt(e.target.value,10),o=$(id==='am-a'?'#am-b':'#am-a');
+  if(o&&!isNaN(x)&&x>=0&&x<=tot)o.value=tot-x});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='pl-name')ACT.amAdd()});
+document.addEventListener('change',e=>{const id=e.target.id;if(S.mode!=='am'||!/^am-(name|date|start|dur)$/.test(id))return;
+  if(RO()){render();return toast('Tournoi archivé : consultation seule.')}
+  if(id==='am-name'){S.name=e.target.value.trim()||'Americano loisir';save();$('#ttl').textContent=S.name}
+  else if(id==='am-date'){S.date=e.target.value;save();render()}
+  else if(id==='am-start'&&e.target.value){S.am.start=e.target.value;save();render()}
+  else if(id==='am-dur'){const x=parseInt(e.target.value,10);if(x>=5&&x<=120){S.am.dur=x;save()}else toast('Durée comprise entre 5 et 120 minutes.');render()}});
+
 useCur();
-if(S.g)UI.tab='matches';
+if(S.g||amReady())UI.tab='matches';
 render();
 </script>
 
