@@ -1,4 +1,4 @@
-# Beach Tennis · Gestion de tournoi (iOS)
+# Beach Tennis · Gestion de tournoi 
 
 Application iPhone/iPad (iOS 16+) construite à partir de l'artefact « Beach tennis · Gestion de tournoi (v2) ».
 Le moteur du tournoi (règles FFT, tirage, TMC, poules, programmation, classement BT25 à BT1000) est repris
